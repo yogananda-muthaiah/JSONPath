@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSONPath Evaluator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+    <!-- Side Navigation -->
+    <div class="w-64 bg-indigo-800 text-white p-6 space-y-6 hidden md:block">
+        <div class="flex items-center space-x-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+            </svg>
+            <h1 class="text-2xl font-bold">JSONPath</h1>
+        </div>
+
+        <nav>
+            <h2 class="text-lg font-semibold mb-4">Quick Start</h2>
+            <ul class="space-y-2">
+                <li>
+                    <button class="example-btn w-full text-left px-3 py-2 rounded hover:bg-indigo-700 transition-colors" data-expr="$.store.book[*].title">
+                        Book Titles
+                    </button>
+                </li>
+                <li>
+                    <button class="example-btn w-full text-left px-3 py-2 rounded hover:bg-indigo-700 transition-colors" data-expr="$.store.book[?(@.price < 11)].title">
+                        Cheap Books
+                    </button>
+                </li>
+                <li>
+                    <a href="/expressions" class="example-btn w-full text-left py-2 rounded hover:bg-indigo-700 transition-colors">Expressions</a>
+                </li>                
+            </ul>
+
+            <div class="mt-6">
+                <h2 class="text-lg font-semibold mb-4">Actions</h2>
+                <div class="space-y-2">
+                    <button id="format-btn" class="w-full px-3 py-2 bg-green-600 rounded hover:bg-green-700 transition-colors">
+                        Format JSON
+                    </button>
+                    <button id="clear-btn" class="w-full px-3 py-2 bg-red-600 rounded hover:bg-red-700 transition-colors">
+                        Clear Input
+                    </button>                                  
+                </div>
+            </div>
+        </nav>
+
+        <div class="mt-auto pt-6 border-t border-indigo-700">
+            <p class="text-sm text-indigo-200">JSONPath Evaluator v1.0</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-6">
+        <div class="container mx-auto max-w-4xl">
+            <h1 class="text-3xl font-bold text-center mb-6 md:hidden">JSONPath Evaluator</h1>
+            
+            <div class="bg-white shadow-md rounded-lg p-6">
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="json-input" class="block text-sm font-medium text-gray-700">JSON Input</label>
+                        <textarea 
+                            id="json-input" 
+                            rows="10" 
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                            placeholder='{"store":{"book":[{"title":"Book 1","price":10},{"title":"Book 2","price":12}]}}'
+                        ></textarea>
+                    </div>
+                    
+                    <div>
+                        <label for="jsonpath-expr" class="block text-sm font-medium text-gray-700">JSONPath Expression</label>
+                        <input 
+                            type="text" 
+                            id="jsonpath-expr" 
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                            placeholder="$.store.book[*].title"
+                        >
+                        
+                        <label for="results" class="block text-sm font-medium text-gray-700 mt-4">Results</label>
+                        <pre 
+                            id="results" 
+                            class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 p-3 min-h-[200px]"
+                        ></pre>
+                    </div>
+                </div>
+                
+                <div class="mt-4 text-center">
+                    <button 
+                        id="evaluate-btn" 
+                        class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    >
+                        Evaluate JSONPath
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center text-gray-600 md:hidden">
+                <h2 class="text-xl font-semibold mb-2">JSONPath Examples</h2>
+                <div class="flex justify-center space-x-4">
+                    <button class="example-btn bg-gray-200 px-3 py-1 rounded-md hover:bg-gray-300" data-expr="$.store.book[*].title">Book Titles</button>
+                    <button class="example-btn bg-gray-200 px-3 py-1 rounded-md hover:bg-gray-300" data-expr="$.store.book[?(@.price < 11)].title">Cheap Books</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const jsonInput = document.getElementById('json-input');
+            const jsonpathExpr = document.getElementById('jsonpath-expr');
+            const evaluateBtn = document.getElementById('evaluate-btn');
+            const resultsDisplay = document.getElementById('results');
+            const exampleBtns = document.querySelectorAll('.example-btn');
+
+            // Example buttons
+            exampleBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    jsonInput.value = JSON.stringify({
+                        "store": {
+                            "book": [
+                                {"title": "Book 1", "price": 10},
+                                {"title": "Book 2", "price": 12}
+                            ]
+                        }
+                    }, null, 2);
+                    jsonpathExpr.value = btn.dataset.expr;
+                });
+            });
+
+            // Evaluate JSONPath
+            evaluateBtn.addEventListener('click', async () => {
+                try {
+                    const response = await fetch('/evaluate_jsonpath/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            json_input: jsonInput.value,
+                            jsonpath_expr: jsonpathExpr.value
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || 'An error occurred');
+                    }
+
+                    const data = await response.json();
+                    resultsDisplay.textContent = JSON.stringify(data.matches, null, 2);
+                } catch (error) {
+                    resultsDisplay.textContent = `Error: ${error.message}`;
+                }
+            });
+
+            const clearBtn = document.getElementById('clear-btn');
+            const formatBtn = document.getElementById('format-btn');
+
+            // Clear JSON input
+            clearBtn.addEventListener('click', () => {
+                jsonInput.value = '';
+                resultsDisplay.textContent = '';
+            });
+
+            // Format JSON input
+            formatBtn.addEventListener('click', () => {
+                try {
+                    const formattedJson = JSON.stringify(JSON.parse(jsonInput.value), null, 4);
+                    jsonInput.value = formattedJson;
+                } catch (error) {
+                    resultsDisplay.textContent = 'Error: Invalid JSON input';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

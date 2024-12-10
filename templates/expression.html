@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSONPath Examples</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+    <!-- Side Navigation -->
+    <div class="w-64 bg-indigo-800 text-white p-6 space-y-6 hidden md:block">
+        <div class="flex items-center space-x-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+            </svg>
+            <h1 class="text-2xl font-bold">JSONPath</h1>
+        </div>
+
+        <nav>
+            <ul class="space-y-2">
+                <li>
+                    <a href="/" class="block px-3 py-2 rounded hover:bg-indigo-700 transition-colors">
+                        Evaluator
+                    </a>
+                </li>
+                <li>
+                    <a href="/examples" class="block px-3 py-2 rounded bg-indigo-700 transition-colors">
+                        Examples
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="mt-auto pt-6 border-t border-indigo-700">
+            <p class="text-sm text-indigo-200">JSONPath Examples v1.0</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-6">
+        <div class="container mx-auto max-w-4xl">
+            <h1 class="text-3xl font-bold text-center mb-6">JSONPath Examples</h1>
+            
+            <div class="bg-white shadow-md rounded-lg p-6">
+                <div class="mb-4">
+                    <label for="example-selector" class="block text-sm font-medium text-gray-700 mb-2">Select Example</label>
+                    <select 
+                        id="example-selector" 
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    >
+                        <option value="">Choose an Example</option>
+                        <option value="book-titles">Book Titles</option>
+                        <option value="cheap-books">Cheap Books</option>
+                        <option value="book-authors">Book Authors</option>
+                        <option value="expensive-books">Expensive Books</option>
+                    </select>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">JSON Input</label>
+                        <pre 
+                            id="json-input" 
+                            class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 p-3 min-h-[200px]"
+                        ></pre>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">JSONPath Expression</label>
+                        <pre 
+                            id="jsonpath-expr" 
+                            class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 p-3 min-h-[200px]"
+                        ></pre>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Results</label>
+                        <pre 
+                            id="results" 
+                            class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 p-3 min-h-[200px]"
+                        ></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Predefined examples
+        const examples = {
+            'book-titles': {
+                input: JSON.stringify({
+                    "store": {
+                        "book": [
+                            {"title": "Book 1", "price": 10, "author": "John Doe"},
+                            {"title": "Book 2", "price": 12, "author": "Jane Smith"}
+                        ]
+                    }
+                }, null, 2),
+                expression: '$.store.book[*].title',
+                results: JSON.stringify(['Book 1', 'Book 2'], null, 2)
+            },
+            'cheap-books': {
+                input: JSON.stringify({
+                    "store": {
+                        "book": [
+                            {"title": "Budget Book", "price": 8, "author": "Alice Brown"},
+                            {"title": "Expensive Book", "price": 15, "author": "Bob Green"}
+                        ]
+                    }
+                }, null, 2),
+                expression: '$.store.book[?(@.price < 10)].title',
+                results: JSON.stringify(['Budget Book'], null, 2)
+            },
+            'book-authors': {
+                input: JSON.stringify({
+                    "store": {
+                        "book": [
+                            {"title": "Python Basics", "price": 20, "author": "Alice Brown"},
+                            {"title": "JavaScript Pro", "price": 25, "author": "Bob Green"},
+                            {"title": "Data Science", "price": 22, "author": "Charlie White"}
+                        ]
+                    }
+                }, null, 2),
+                expression: '$.store.book[*].author',
+                results: JSON.stringify(['Alice Brown', 'Bob Green', 'Charlie White'], null, 2)
+            },
+            'expensive-books': {
+                input: JSON.stringify({
+                    "store": {
+                        "book": [
+                            {"title": "Cheap Book", "price": 10},
+                            {"title": "Moderate Book", "price": 20},
+                            {"title": "Expensive Book", "price": 30}
+                        ]
+                    }
+                }, null, 2),
+                expression: '$.store.book[?(@.price > 25)].title',
+                results: JSON.stringify(['Expensive Book'], null, 2)
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const exampleSelector = document.getElementById('example-selector');
+            const jsonInput = document.getElementById('json-input');
+            const jsonpathExpr = document.getElementById('jsonpath-expr');
+            const results = document.getElementById('results');
+
+            exampleSelector.addEventListener('change', (e) => {
+                const selectedExample = e.target.value;
+                
+                if (selectedExample && examples[selectedExample]) {
+                    const example = examples[selectedExample];
+                    
+                    jsonInput.textContent = example.input;
+                    jsonpathExpr.textContent = example.expression;
+                    results.textContent = example.results;
+                } else {
+                    jsonInput.textContent = '';
+                    jsonpathExpr.textContent = '';
+                    results.textContent = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

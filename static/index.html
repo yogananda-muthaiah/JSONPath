@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSONPath Evaluator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+    <div class="container mx-auto max-w-4xl">
+        <h1 class="text-3xl font-bold text-center mb-6">JSONPath Evaluator</h1>
+        
+        <div class="bg-white shadow-md rounded-lg p-6">
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <label for="json-input" class="block text-sm font-medium text-gray-700">JSON Input</label>
+                    <textarea 
+                        id="json-input" 
+                        rows="10" 
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                        placeholder='{"store":{"book":[{"title":"Book 1","price":10},{"title":"Book 2","price":12}]}}'
+                    ></textarea>
+                </div>
+                
+                <div>
+                    <label for="jsonpath-expr" class="block text-sm font-medium text-gray-700">JSONPath Expression</label>
+                    <input 
+                        type="text" 
+                        id="jsonpath-expr" 
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                        placeholder="$.store.book[*].title"
+                    >
+                    
+                    <label for="results" class="block text-sm font-medium text-gray-700 mt-4">Results</label>
+                    <pre 
+                        id="results" 
+                        class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 p-3 min-h-[200px]"
+                    ></pre>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-center">
+                <button 
+                    id="evaluate-btn" 
+                    class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                >
+                    Evaluate JSONPath
+                </button>
+            </div>
+        </div>
+        
+        <div class="mt-6 text-center text-gray-600">
+            <h2 class="text-xl font-semibold mb-2">JSONPath Examples</h2>
+            <div class="flex justify-center space-x-4">
+                <button class="example-btn bg-gray-200 px-3 py-1 rounded-md hover:bg-gray-300" data-expr="$.store.book[*].title">Book Titles</button>
+                <button class="example-btn bg-gray-200 px-3 py-1 rounded-md hover:bg-gray-300" data-expr="$.store.book[?(@.price < 11)].title">Cheap Books</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const jsonInput = document.getElementById('json-input');
+            const jsonpathExpr = document.getElementById('jsonpath-expr');
+            const evaluateBtn = document.getElementById('evaluate-btn');
+            const resultsDisplay = document.getElementById('results');
+            const exampleBtns = document.querySelectorAll('.example-btn');
+
+            // Example buttons
+            exampleBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    jsonInput.value = JSON.stringify({
+                        "store": {
+                            "book": [
+                                {"title": "Book 1", "price": 10},
+                                {"title": "Book 2", "price": 12}
+                            ]
+                        }
+                    }, null, 2);
+                    jsonpathExpr.value = btn.dataset.expr;
+                });
+            });
+
+            // Evaluate JSONPath
+            evaluateBtn.addEventListener('click', async () => {
+                try {
+                    const response = await fetch('/evaluate_jsonpath/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            json_input: jsonInput.value,
+                            jsonpath_expr: jsonpathExpr.value
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || 'An error occurred');
+                    }
+
+                    const data = await response.json();
+                    resultsDisplay.textContent = JSON.stringify(data.matches, null, 2);
+                } catch (error) {
+                    resultsDisplay.textContent = `Error: ${error.message}`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
