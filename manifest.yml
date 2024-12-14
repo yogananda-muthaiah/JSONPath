@@ -1,1 +1,13 @@
-
+---
+applications:
+  - name: jsonpath
+    path: allin1
+    memory: 320MB
+    disk_quota: 1024M
+    host: jsonpath
+    domain: cfapps.{region}.hana.ondemand.com
+    command: python app.py
+    health-check-type: http
+    health-check-http-endpoint: /        
+    buildpacks: ["python_buildpack"]
+    services:
